@@ -1,0 +1,69 @@
+update
+    # verify '.git' exists
+    git checkout dev
+    git pull
+    git reset --hard origin/main
+    sed -i -E -e 's|^\s+branch:\s.*$|    branch: dev|' deploy.yml
+    ./deploy
+
+
+promote
+    # VERIFY git branch 'dev' is checked out
+    # get commit message
+    - git log -1 --format=%s
+    # GET list of container images and their dependant images
+    - images with CONTAINER_TAG:-  or/ service.image.tag == dev
+    # rename images and push both main & fingerprint to registry
+
+    git checkout main
+    git pull
+    sed -i -E -e 's|^\s+branch:\s.*$|    branch: main|' deploy.yml
+    - restore docker-compose.yml & deploy.yml
+    git reset --hard origin/dev
+
+    cd workspace.production/.versions/
+    git checkout dev
+    git pull
+    git push origin HEAD:main
+    git checkout main
+    cd ../..
+    git add -A; git commit -m '';git push
+
+
+
+
+REPOSITORY                                               TAG              IMAGE ID       CREATED         SIZE
+s2.ubuntu.home:5000/alpine/confluent/7.6.1               dev              28cedadfc59b   47 hours ago    651MB
+s2.ubuntu.home:5000/alpine/jenkins/2.440.3               dev              25a3f6d19eca   47 hours ago    936MB
+s2.ubuntu.home:5000/alpine/nagios/4.4.11                 v3.9.10          bbc91244e056   9 months ago    306MB
+s2.ubuntu.home:5000/alpine/nginx-proxy/1.26.0            dev              58685a704fea   13 days ago     98.1MB
+s2.ubuntu.home:5000/alpine/phpmyadmin/5.2.1              v3.9.10          91bf5c708747   9 months ago    141MB
+s2.ubuntu.home:5000/alpine/webdav                        dev              d433d8f76b95   2 months ago    61.4MB
+s2.ubuntu.home:5000/docker.io/groovy                     2.6-jre-alpine   42ee35c5366a   5 years ago     123MB
+s2.ubuntu.home:5000/docker.io/mysql                      5.7.23           1b30b36ae96a   5 years ago     372MB
+s2.ubuntu.home:5000/docker.io/seglo/kafka-lag-exporter   0.8.2            f4f75706edd1   18 months ago   341MB
+
+
+
+ git add -A; git commit -m 'update openjdk to 17.0.11_p9-r0';git push --set-upstream origin dev
+ git add -A; git commit -m 'll';git reset --soft e4b38a9;git commit -m 'update openjdk to 17.0.11_p9-r0';git push -f
+ 
+ image: ${DOCKER_REGISTRY:-s2.ubuntu.home:5000/}${CONTAINER_OS:-alpine}/confluent/${CONFLUENT_VERSION:-7.6.1}:${CONTAINER_TAG:-a35bd6f8ace94f6436a94a25bb8489e8d99c2b32beb595590a7d21cdc782e820}
+ 
+ image: ${DOCKER_REGISTRY:-s2.ubuntu.home:5000/}${CONTAINER_OS:-alpine}/jenkins/${JENKINS_VERSION:-2.440.3}:${CONTAINER_TAG:-2283c16481bc67c11884f3b5da048e9bd0be135c643d120de558b86f0a9a3741}
+ image: ${DOCKER_REGISTRY:-s2.ubuntu.home:5000/}${CONTAINER_OS:-alpine}/nginx-proxy/${NGINX_VERSION:-1.26.0}:${CONTAINER_TAG:-fef9ce09fad9419ee4ccc644ae57d4ca03a67e393b7ef99fea0d6beacdd03dd8}
+ image: ${DOCKER_REGISTRY:-s2.ubuntu.home:5000/}${CONTAINER_OS:-alpine}/webdav:${CONTAINER_TAG:-fc953a68f4faea0a19fca9c49060aa323df03c4eae6511af714cad990a75c5d3}
+
+ 
+ for image in confluent jenkins 'nginx-proxy' webdav; do
+ 
+ 
+ git tag s2.ubuntu.home:5000/alpine/confluent/7.6.1
+ git tag s2.ubuntu.home:5000/alpine/jenkins/2.440.3
+ git tag s2.ubuntu.home:5000/alpine/nginx-proxy/1.26.0
+ git tag s2.ubuntu.home:5000/alpine/nginx-base/1.26.0
+ git tag s2.ubuntu.home:5000/alpine/openjdk/17.0.11_p9-r0
+ git tag s2.ubuntu.home:5000/alpine/base_container
+ 
+ 
+ docker inspect "$image" | jq -r '.[0].Config.Labels."container.parent"'
