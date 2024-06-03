@@ -9,8 +9,6 @@ promote
 """
 
 import json
-from src import BRANCH 
-
 
 class ResultsIterator():
     def __init__(self):
@@ -31,14 +29,16 @@ class ResultsIterator():
             return self.get_value(value)
         raise StopIteration
 
+
 class ResultsIteratorForDockerCompose(ResultsIterator):
+    BRANCH = 'dev'
     def __init__(self, values):
-        super(ResultsIteratorForDockerCompose, self).__init()
+        super(ResultsIteratorForDockerCompose, self).__init__()
         self.values = json.loads(values)
     def value_ok(self, value):
-        return value["Tag"] == BRANCH
-    def get_value(self, value):
-        return value['Repository'] + ':' + value['Tag']
+        return value["Tag"] == ResultsIteratorForDockerCompose.BRANCH
+#    def get_value(self, value):
+#        return value['Repository'] + ':' + value['Tag']
 
 
 class ResultsIteratorForText(ResultsIterator):

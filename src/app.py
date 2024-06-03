@@ -8,7 +8,7 @@ promote
 
 """
 
-from src import GetArgs, Promote, Update
+from src.getargs import GetArgs
 import logging
 import logging.handlers
 from pathlib import Path
@@ -37,14 +37,11 @@ class App:
         # Add console handler to logger
         logger.addHandler(console_handler)
 
-    def main(self):
-        args = GetArgs()
+    def main(self, usage):
+        args = GetArgs(usage)
         args.validate_options()
         if args.promote:
-            promote = Promote()
-            return promote.main(args)
+            return args.project.promote()
         if args.update:
-            update = Update()
-            return update.main(args)
-
+            return args.project.update()
         return 0

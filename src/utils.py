@@ -10,10 +10,9 @@ promote
 
 import command
 import shlex
-from .src import color, ResultsIteratorForDockerCompose, ResultsIteratorForText
+from src.color import color
+from src.results_iterator import ResultsIteratorForDockerCompose, ResultsIteratorForText
 
-
-BRANCH = 'dev'
 
 def docker_compose(workspace):
     return run('docker-compose images --format json', workspace, ResultsIteratorForDockerCompose)
@@ -28,7 +27,7 @@ def git_last_commit_message(project_dir):
     return run('git log -1 --format=%s', project_dir, ResultsIteratorForText)[0]
 
 def run(cmdline, directory, fn):
-    print(color.change(color.GREY, cmdline))
+    print(color.change("GREY", cmdline))
     response = command.run(shlex.split(cmdline), cwd = directory)
     if fn == None:
         return response.exit

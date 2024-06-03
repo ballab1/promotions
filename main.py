@@ -17,19 +17,21 @@ def usage():
 
 Usage:
     $progname [ -h | --help ]
+              [ -b | --branch ]
               [ -d | --directory ]
               [ -p | --promote }
               [ -u | --update ]
 
     Common options:
         -h --help                  Display a basic set of usage instructions
-        -d --directory             workspace directory
-        -p --project <project>     promote workspace and docker images
-        -u --update                update workspace
+        -d --branch                Branch to promote
+        -d --directory             Workspace directory
+        -p --promote               Promote workspace and docker images
+        -u --update                Update workspace
 
 """
     return examples
 
 if __name__ == '__main__':
     app = App()
-    sys.exit(app.main())
+    sys.exit(app.main(usage))
