@@ -5,7 +5,7 @@ import docker
 import os
 import os.path
 from src.utils import git_checkout, git_branch, docker_compose, run
-from src.promoted_image import PromoteImage
+from src.promote_image import PromoteImage
 from src.results_iterator import ResultsIteratorForDockerCompose
 
 
@@ -43,31 +43,33 @@ class Project:
         else:
             self.branch = git_branch(self.project_dir)
 
-        client = docker.from_env()
-        if not client:
+        self.client = docker.APIClient(base_url='unix://var/run/docker.sock')
+        if not self.client:
             raise ValueError('Must have DOCKER running')
 
 
     def promote(self):
         ResultsIteratorForDockerCompose.DEV_BRANCH = self.branch
-        PromoteImage.set_globals()
+        PromoteImage.set_globals(self.client)
         images = []
         for image in docker_compose(self.workspace):
             try:
                 while image not in images:
-                    promoted_image = PromoteImage(image)
-                    promoted_image.promote(self.branch)
+                    promoted_image = PromoteImage(image, self.branch)
+                    promoted_image.promote()
                     images.append(image)
-                    image = promoted_image.parent()
+                    image = promoted_image.get_parent()
+                    if image == None:
+                        break
             except Exception as e:
                 print(e.with_traceback(e.__traceback__))
         # update versions folder
-        git_checkout(self.versions_dir, 'main')
+        git_checkout(self.versions_dir, PromoteImage.PROMOTED_BRANCH)
         run(f'git reset --hard origin/{self.branch}', self.versions_dir, None)
         run('git push', self.versions_dir, None)
 
         # update project folder
-        git_checkout(self.directory, 'main')
+        git_checkout(self.directory, PromoteImage.PROMOTED_BRANCH)
         run(f'git reset --hard origin/{self.branch}', self.directory, None)
         run('git push', self.directory, None)
         
