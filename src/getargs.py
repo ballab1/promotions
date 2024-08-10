@@ -10,6 +10,7 @@ promote
 
 import argparse
 import sys
+from src.color import color
 from src.project import Project
 
 
@@ -29,6 +30,7 @@ class GetArgs:
         self.update = args.update
         if len(sys.argv) == 1:
             self.update = True
+        print(color.change("WHITE", f'Current directory: {args.directory}'))
         self.project = Project(args.directory, args.branch)
 
     def validate_options(self):

@@ -12,6 +12,7 @@ import command
 import shlex
 from src.color import color
 from src.results_iterator import ResultsIteratorForDockerCompose, ResultsIteratorForText
+import sys
 
 
 def docker_compose(workspace):
@@ -27,8 +28,12 @@ def git_last_commit_message(project_dir):
     return run('git log -1 --format=%s', project_dir, ResultsIteratorForText)[0]
 
 def run(cmdline, directory, fn):
-    print(color.change("GREY", cmdline))
-    response = command.run(shlex.split(cmdline), cwd = directory)
+    print(color.change("GREY", '  ' + cmdline))
+    try:
+        response = command.run(shlex.split(cmdline), cwd = directory)
+    except Exception as e:
+        print(color.change("RED", e.message), )
+        return None
     if fn == None:
         return response.exit
     results = []

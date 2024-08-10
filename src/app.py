@@ -23,7 +23,7 @@ class App:
         logger_name = Path(__file__).stem
 
         # create logging formatter
-        log_formatter = logging.Formatter(fmt=' %(name)s :: %(levelname)s :: %(message)s')
+        log_formatter = logging.Formatter(fmt=' %(asctime)s :: %(name)s :: %(levelname)s :: %(message)s')
 
         # create logger
         logger = logging.getLogger(logger_name)

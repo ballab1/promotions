@@ -4,6 +4,7 @@
 import docker
 import os
 import os.path
+from src.color import color
 from src.utils import git_checkout, git_branch, docker_compose, run
 from src.promote_image import PromoteImage
 from src.results_iterator import ResultsIteratorForDockerCompose
@@ -51,29 +52,50 @@ class Project:
     def promote(self):
         ResultsIteratorForDockerCompose.DEV_BRANCH = self.branch
         PromoteImage.set_globals(self.client)
-        images = []
+        promoted_images = []
+        primary_images = []
         for image in docker_compose(self.workspace):
+            rep = image['Repository']
+            print(color.change("BLUE", f'\nProcessing {rep} ========================================================================'))
+            primary_images.append(f'{rep}:{PromoteImage.PROMOTED_BRANCH}')
+            PromoteImage.images_to_remove.append(f'{rep}:{self.branch}')
             try:
-                while image not in images:
+                while image not in promoted_images:
                     promoted_image = PromoteImage(image, self.branch)
                     promoted_image.promote()
-                    images.append(image)
+                    promoted_images.append(image)
                     image = promoted_image.get_parent()
                     if image == None:
                         break
             except Exception as e:
                 print(e.with_traceback(e.__traceback__))
+            print('')
+        PromoteImage.remove_images(primary_images)
+        
         # update versions folder
-        git_checkout(self.versions_dir, PromoteImage.PROMOTED_BRANCH)
-        run(f'git reset --hard origin/{self.branch}', self.versions_dir, None)
-        run('git push', self.versions_dir, None)
+        print(color.change("BLUE", f'\ncd {self.versions_dir}'))
+        git_checkout(self.versions_dir, self.branch)
+        run('git pull', self.versions_dir, None)
+        run(f'git push --force origin HEAD:{PromoteImage.PROMOTED_BRANCH}', self.versions_dir, None)
+        run(f'git checkout {PromoteImage.PROMOTED_BRANCH}', self.versions_dir, None)
+        run(f'git reset --hard origin/{PromoteImage.PROMOTED_BRANCH}', self.versions_dir, None)
 
         # update project folder
-        git_checkout(self.directory, PromoteImage.PROMOTED_BRANCH)
-        run(f'git reset --hard origin/{self.branch}', self.directory, None)
-        run('git push', self.directory, None)
+        print(color.change("BLUE", f'\ncd {self.directory}'))
+        git_checkout(self.directory, self.branch)
+        run('git pull', self.directory, None)
+        run(f'git push --force origin HEAD:{PromoteImage.PROMOTED_BRANCH}', self.directory, None)
+        run(f'git checkout {PromoteImage.PROMOTED_BRANCH}', self.directory, None)
+        run(f'git reset --hard origin/{PromoteImage.PROMOTED_BRANCH}', self.directory, None)
         
 
-
     def update(self):
-        pass
+        ResultsIteratorForDockerCompose.DEV_BRANCH = self.branch
+        PromoteImage.set_globals(self.client)
+        print(color.change("BLUE", f'\ncd {self.versions_dir}'))
+        git_checkout(self.versions_dir, self.branch)
+        run('git pull', self.versions_dir, None)
+
+        print(color.change("BLUE", f'\ncd {self.directory}'))
+        git_checkout(self.directory, self.branch)
+        run('git pull', self.directory, None)
