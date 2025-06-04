@@ -19,7 +19,7 @@ Usage:
     $progname [ -h | --help ]
               [ -b | --branch ]
               [ -d | --directory ]
-              [ -p | --promote }
+              [ -p | --promote ]
               [ -u | --update ]
 
     Common options:

@@ -13,8 +13,8 @@ class PromoteImage:
     images_to_remove = []
 
     # promoting an image consists of:
-    #   1. check if image has already been promoted and if so, skip remaining steps  
-    #   2. determine if image exists locally, an if not pull it 
+    #   1. check if image has already been promoted and if so, skip remaining steps
+    #   2. determine if image exists locally, an if not pull it
     #   3. change image tag to 'main' then push, then delete 'image:main'
     #   4. change image tag to {fingerprint} then push  then delete 'image{fingerprint}'
     #   5. if image was pulled, delete the original image
@@ -110,12 +110,12 @@ class PromoteImage:
         tag = None
         for image in PromoteImage.current_images:
             repo_tags = image.get('RepoTags')
-            if self.parent in repo_tags: 
+            if self.parent in repo_tags:
                 name = self.parent
                 tag = parent_fingerprint
                 break
             dev_name = f'{parent_repository}:{self.branch}'
-            if dev_name in repo_tags: 
+            if dev_name in repo_tags:
                 name = dev_name
                 tag = self.branch
                 break
@@ -140,7 +140,7 @@ class PromoteImage:
 
     @staticmethod
     def remove_images(primary_images):
-        print(color.change("BLUE", '\n  Removing unneeded images'))
+        print(color.change("BLUE", '\n  Removing temporary images'))
         removed = []
         for name in sorted(PromoteImage.images_to_remove):
             if name in removed or name in primary_images:
